@@ -1,0 +1,16 @@
+[project]
+name = "python_detection_service"
+version = "0.1.0"
+description = "Runs detection logic"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+]
+
+[tool.black]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
