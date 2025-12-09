@@ -9,15 +9,12 @@ COPY pyproject.toml uv.lock ./
 # Directory where the model will live
 ENV MODEL_DIR=/opt/models/distilbert-sst2
 
-RUN uv sync --frozen
-
-# Install dependencies Download the model at build time using huggingface-cli
+# Install dependencies and download the model at build time using huggingface-cli
 RUN mkdir -p "$MODEL_DIR" && \
     uv sync --frozen && \
-    uv run huggingface-cli download \
+    uv run hf download \
         distilbert/distilbert-base-uncased-finetuned-sst-2-english \
-        --local-dir "$MODEL_DIR" \
-        --local-dir-use-symlinks False
+        --local-dir "$MODEL_DIR"
 
 # Copy application code
 COPY main.py .

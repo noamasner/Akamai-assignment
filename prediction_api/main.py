@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
@@ -5,18 +7,27 @@ import uvicorn
 import time
 
 from sympy.printing.pytorch import torch
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+from transformers import pipeline
 
-# ---------------- Load model once ----------------
-MODEL_NAME = "distilbert/distilbert-base-uncased-finetuned-sst-2-english"
+# ---------------- Load model ----------------
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-SENTIMENT_CLASSIFIER = pipeline("text-classification", model=MODEL_NAME, device=DEVICE)
+MODEL_DIR = os.environ.get("MODEL_DIR")
+if MODEL_DIR is not None and os.path.isdir(MODEL_DIR):
+    # The model exists locally. This should always happen when running the image.
+    print(f"Loading model from {MODEL_DIR}")
+    SENTIMENT_CLASSIFIER = pipeline("text-classification", model=MODEL_DIR, tokenizer=MODEL_DIR, device=DEVICE)
+else:
+    # The model does not exist locally. This will happen if the model wasn't pre-downloaded.
+    # Downloading from huggingface if it's not in the cache folder.
+    print("The model is not found locally. downloading from huggingface if not in cache")
+    MODEL_NAME = "distilbert/distilbert-base-uncased-finetuned-sst-2-english"
+    SENTIMENT_CLASSIFIER = pipeline("text-classification", model=MODEL_NAME, device=DEVICE)
 
 # --- FastAPI App Initialization ---
 app = FastAPI(
     title="Prediction Service",
     description="A simple API to simulate ML model predictions.",
-    version="1.0.0",
+    version="2.0.0",
 )
 
 # --- Pydantic Models for Request and Response ---
