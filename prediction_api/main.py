@@ -4,6 +4,14 @@ from typing import List
 import uvicorn
 import time
 
+from sympy.printing.pytorch import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+
+# ---------------- Load model once ----------------
+MODEL_NAME = "distilbert/distilbert-base-uncased-finetuned-sst-2-english"
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+SENTIMENT_CLASSIFIER = pipeline("text-classification", model=MODEL_NAME, device=DEVICE)
+
 # --- FastAPI App Initialization ---
 app = FastAPI(
     title="Prediction Service",
@@ -19,25 +27,17 @@ class PredictionRequest(BaseModel):
 class PredictionResponse(BaseModel):
     predictions: List[str]
 
-# --- Mock Model Function ---
+# --- Run Model Function ---
 # In a real scenario, this is where you would load your model
 # and run inference on the input instances.
 async def run_model(instances: List[str]) -> List[str]:
     """
-    Simulates model inference.
+    Run model inference.
     - Takes a list of strings (instances).
     - Returns a list of strings (predictions).
     """
-
-    # Simulate a long-running model inference that takes time for a batch of instances
-    time.sleep(0.5)
-    print(f"--- Running model on batch of {len(instances)} instances ---")
-    predictions = []
-    for instance in instances:
-        prediction = f"predicted_label_for_{instance.lower().replace(' ', '_')}"
-        predictions.append(prediction)
-    print(f"--- Finished model run ---")
-    return predictions
+    predictions = SENTIMENT_CLASSIFIER(instances)
+    return [str(prediction) for prediction in predictions]
 
 # --- API Endpoint ---
 @app.post("/api/v1/predict", response_model=PredictionResponse)
