@@ -59,6 +59,7 @@ async def predict(request: PredictionRequest) -> PredictionResponse:
     """
     
     print(time.strftime("--- Received request at %Y-%m-%d %H:%M:%S", time.gmtime()), f"{int((time.time() % 1) * 1000):03d} UTC")
+    print(request.instances)
     
     predictions = await run_model(request.instances)
     
